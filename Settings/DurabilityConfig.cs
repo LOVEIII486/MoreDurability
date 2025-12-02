@@ -21,7 +21,7 @@ namespace MoreDurability.Settings
         private const bool Default_NoLoss = false;
         private const bool Default_RestoreMax = false;
         private const float Default_RestoreCost = 2.0f;
-        private const string Default_WhitelistedTags = "Weapon,Armor"; 
+        private const string Default_WhitelistedTags = "Gun,Helmat,Armor"; 
 
         // ==================== 配置变更事件 ====================
         public static event Action OnConfigChanged;
