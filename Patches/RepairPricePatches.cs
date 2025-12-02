@@ -4,6 +4,7 @@ using System.Reflection;
 using Duckov.UI;
 using HarmonyLib;
 using ItemStatsSystem;
+using MoreDurability.Settings;
 using UnityEngine;
 
 namespace MoreDurability.Patches
@@ -24,6 +25,8 @@ namespace MoreDurability.Patches
             try
             {
                 bool restoreEnabled = Settings.DurabilityConfig.RestoreMaxDurability;
+                
+                if (!DurabilityConfig.IsWhitelisted(item)) return;
                 
                 if (!restoreEnabled || item == null || item.DurabilityLoss <= 0f)
                 {
@@ -64,6 +67,12 @@ namespace MoreDurability.Patches
                 {
                     __result = false;
                     return false;
+                }
+                
+                if (!DurabilityConfig.IsWhitelisted(selectedItem))
+                {
+                    // 让原版逻辑运行
+                    return true; 
                 }
 
                 // 如果启用了恢复上限功能，且有耐久损失，允许维修

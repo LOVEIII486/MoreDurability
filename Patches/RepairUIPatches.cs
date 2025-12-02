@@ -2,6 +2,7 @@
 using Duckov.UI;
 using HarmonyLib;
 using ItemStatsSystem;
+using MoreDurability.Settings;
 using SodaCraft.Localizations;
 using TMPro;
 using UnityEngine;
@@ -23,7 +24,9 @@ namespace MoreDurability.Patches
             {
                 return;
             }
-
+            
+            if (!DurabilityConfig.IsWhitelisted(selectedItem)) return;
+            
             bool restoreEnabled = Settings.DurabilityConfig.RestoreMaxDurability;
             bool noLossEnabled = Settings.DurabilityConfig.NoMaxDurabilityLoss;
 
@@ -87,7 +90,9 @@ namespace MoreDurability.Patches
             {
                 return;
             }
-
+            
+            if (!DurabilityConfig.IsWhitelisted(selectedItem)) return;
+            
             bool restoreEnabled = Settings.DurabilityConfig.RestoreMaxDurability;
 
             if (!restoreEnabled || selectedItem.DurabilityLoss <= 0f)

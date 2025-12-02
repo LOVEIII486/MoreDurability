@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ItemStatsSystem; // 引用游戏物品命名空间
 using MoreDurability.ModSettingsApi;
 using UnityEngine;
 
@@ -11,12 +14,14 @@ namespace MoreDurability.Settings
         public const string Key_NoMaxDurabilityLoss = "NoMaxDurabilityLoss";
         public const string Key_RestoreMaxDurability = "RestoreMaxDurability";
         public const string Key_RestoreCostMultiplier = "RestoreCostMultiplier";
+        public const string Key_WhitelistedTags = "WhitelistedTags";
 
         // ==================== 默认值 ====================
         private const float Default_Multiplier = 1.0f;
         private const bool Default_NoLoss = false;
         private const bool Default_RestoreMax = false;
         private const float Default_RestoreCost = 2.0f;
+        private const string Default_WhitelistedTags = "Weapon,Armor"; 
 
         // ==================== 配置变更事件 ====================
         public static event Action OnConfigChanged;
@@ -26,7 +31,11 @@ namespace MoreDurability.Settings
         private static bool _noMaxDurabilityLoss = Default_NoLoss;
         private static bool _restoreMaxDurability = Default_RestoreMax;
         private static float _restoreCostMultiplier = Default_RestoreCost;
+        private static string _whitelistedTags = Default_WhitelistedTags;
         
+        // 缓存解析后的标签集合
+        private static HashSet<string> _tagSet = new HashSet<string>();
+
         /// <summary>
         /// 物品耐久度倍率
         /// </summary>
@@ -61,7 +70,6 @@ namespace MoreDurability.Settings
 
         /// <summary>
         /// 维修时恢复满耐久度上限
-        /// 优先级高于不掉耐久上限
         /// </summary>
         public static bool RestoreMaxDurability 
         { 
@@ -93,6 +101,61 @@ namespace MoreDurability.Settings
         }
 
         /// <summary>
+        /// 标签白名单字符串
+        /// </summary>
+        public static string WhitelistedTags
+        {
+            get => _whitelistedTags;
+            set
+            {
+                if (_whitelistedTags != value)
+                {
+                    _whitelistedTags = value;
+                    ParseTags();
+                    OnConfigChanged?.Invoke();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 解析逗号分隔的标签字符串到 HashSet
+        /// </summary>
+        private static void ParseTags()
+        {
+            _tagSet.Clear();
+            if (string.IsNullOrWhiteSpace(_whitelistedTags)) return;
+
+            var tags = _whitelistedTags.Split(new[] { ',', '，' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var tag in tags)
+            {
+                _tagSet.Add(tag.Trim());
+            }
+            // Debug.Log($"[MoreDurability] 已更新标签白名单: {string.Join(", ", _tagSet)}");
+        }
+
+        /// <summary>
+        /// 检查物品是否在允许的标签白名单内
+        /// </summary>
+        public static bool IsWhitelisted(Item item)
+        {
+            if (item == null) return false;
+            
+            if (_tagSet == null || _tagSet.Count == 0) return true;
+
+            if (item.Tags == null) return false;
+
+            foreach (var tag in _tagSet)
+            {
+                if (item.Tags.Contains(tag))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// 从 ModSetting 读取已保存的配置
         /// </summary>
         public static void Load()
@@ -119,9 +182,17 @@ namespace MoreDurability.Settings
                     _restoreCostMultiplier = savedRestoreCost;
                 }
             }
+
+            if (ModSettingAPI.GetSavedValue(Key_WhitelistedTags, out string savedTags))
+            {
+                _whitelistedTags = savedTags;
+            }
+            
+            ParseTags();
             
             Debug.Log($"[MoreDurability] 配置已加载: 倍率={_multiplier:F1}, 不掉上限={_noMaxDurabilityLoss}, " +
-                      $"恢复上限={_restoreMaxDurability}, 恢复价格倍率={_restoreCostMultiplier:F1}");
+                      $"恢复上限={_restoreMaxDurability}, 恢复价格倍率={_restoreCostMultiplier:F1}, " +
+                      $"白名单=[{string.Join(", ", _tagSet)}]");
             
             OnConfigChanged?.Invoke();
         }

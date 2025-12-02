@@ -2,6 +2,7 @@
 using Duckov.UI;
 using HarmonyLib;
 using ItemStatsSystem;
+using MoreDurability.Settings; // 引用配置
 using UnityEngine;
 
 namespace MoreDurability.Patches
@@ -34,8 +35,11 @@ namespace MoreDurability.Patches
         {
             if (__0 == null) return;
 
-            bool restoreEnabled = Settings.DurabilityConfig.RestoreMaxDurability;
-            bool noLossEnabled = Settings.DurabilityConfig.NoMaxDurabilityLoss;
+            // 检查白名单
+            if (!DurabilityConfig.IsWhitelisted(__0)) return;
+
+            bool restoreEnabled = DurabilityConfig.RestoreMaxDurability;
+            bool noLossEnabled = DurabilityConfig.NoMaxDurabilityLoss;
 
             // 修复恢复耐久上限
             if (restoreEnabled && __0.DurabilityLoss > 0f)

@@ -4,3 +4,4 @@ Setting_NoMaxDurabilityLoss,维修不掉耐久度上限,1.0,GeneralSettings
 Setting_RestoreMaxDurability,维修恢复耐久度上限,1.0,GeneralSettings
 Setting_RestoreCostMultiplier,恢复耐久上限额外价格倍率,1.0,GeneralSettings
 Settings_Group_Title,更多耐久设置,1.0,Groups
+Setting_WhitelistedTags,生效标签白名单（逗号分隔，留空则全部生效）,1.0,GeneralSettings

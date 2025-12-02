@@ -4,3 +4,4 @@ Setting_NoMaxDurabilityLoss,No Max Durability Loss on Repair,1.0,GeneralSettings
 Setting_RestoreMaxDurability,Restore Max Durability on Repair,1.0,GeneralSettings
 Setting_RestoreCostMultiplier,Extra Cost Multiplier for Restoring Max Durability,1.0,GeneralSettings
 Settings_Group_Title,Advanced Durability Settings,1.0,Groups
+Setting_WhitelistedTags,"Whitelisted Tags (comma separated, empty for all)",1.0,GeneralSettings

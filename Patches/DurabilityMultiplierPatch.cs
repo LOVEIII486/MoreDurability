@@ -28,7 +28,6 @@ namespace MoreDurability.Patches
 
         /// <summary>
         /// 拦截动态添加的物品
-        /// 当其他模组调用 ItemAssetsCollection.AddDynamicEntry 时，自动应用倍率
         /// </summary>
         [HarmonyPatch(typeof(ItemAssetsCollection), "AddDynamicEntry")]
         [HarmonyPostfix]
@@ -74,7 +73,7 @@ namespace MoreDurability.Patches
                 }
             }
 
-            Debug.Log($"{LogTag} 已更新 {count} 个物品的耐久度上限，当前倍率: {multiplier}x");
+            // Debug.Log($"{LogTag} 已更新 {count} 个物品的耐久度上限，当前倍率: {multiplier}x");
         }
 
         /// <summary>
@@ -86,6 +85,9 @@ namespace MoreDurability.Patches
             {
                 // 过滤掉没有耐久度的物品
                 if (item.Constants == null || !item.UseDurability) return false;
+
+                // 检查白名单
+                if (!DurabilityConfig.IsWhitelisted(item)) return false;
 
                 // 备份原始耐久值
                 float originalMax;
@@ -100,10 +102,13 @@ namespace MoreDurability.Patches
                 }
                 if (originalMax <= 1f) return false;
 
-                // 计算新上限
                 float newMax = originalMax * multiplier;
                 item.Constants.SetFloat("MaxDurability", newMax, true);
-                item.Variables.SetFloat("Durability", newMax, true);
+                
+                if (item.Variables.GetFloat("Durability") > newMax)
+                {
+                    item.Variables.SetFloat("Durability", newMax, true);
+                }
 
                 return true;
             }

@@ -61,6 +61,18 @@ namespace MoreDurability.Settings
                 2, 5
             );
 
+            // ==================== 5. 标签白名单 ====================
+            ModSettingAPI.AddInput(
+                DurabilityConfig.Key_WhitelistedTags,
+                LocalizationManager.GetText("Setting_WhitelistedTags"),
+                DurabilityConfig.WhitelistedTags,
+                100,
+                (value) =>
+                {
+                    DurabilityConfig.WhitelistedTags = value;
+                }
+            );
+
             ModSettingAPI.AddGroup(
                 "MoreDurability_MainGroup",
                 LocalizationManager.GetText("Settings_Group_Title"),
@@ -69,7 +81,8 @@ namespace MoreDurability.Settings
                     DurabilityConfig.Key_DurabilityMultiplier, 
                     DurabilityConfig.Key_NoMaxDurabilityLoss, 
                     DurabilityConfig.Key_RestoreMaxDurability,
-                    DurabilityConfig.Key_RestoreCostMultiplier
+                    DurabilityConfig.Key_RestoreCostMultiplier,
+                    DurabilityConfig.Key_WhitelistedTags
                 },
                 0.8f, true, true
             );
