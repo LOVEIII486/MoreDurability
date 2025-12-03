@@ -12,12 +12,7 @@ namespace MoreDurability.Patches
     /// </summary>
     [HarmonyPatch(typeof(ItemRepairView), "Repair", new Type[] { typeof(Item), typeof(bool) })]
     public static class RepairExecutionPatch
-    {
-        private const string LogTag = "[MoreDurability.Repair]";
-
-        /// <summary>
-        /// 前置，保存维修前的耐久损失值
-        /// </summary>
+    {  
         [HarmonyPrefix]
         public static void Prefix(ref Item __0, ref float __state)
         {
@@ -27,9 +22,6 @@ namespace MoreDurability.Patches
             }
         }
 
-        /// <summary>
-        /// 后置，修改耐久度
-        /// </summary>
         [HarmonyPostfix]
         public static void Postfix(ref Item __0, ref float __state)
         {
@@ -38,7 +30,8 @@ namespace MoreDurability.Patches
             // 检查白名单
             if (!DurabilityConfig.IsWhitelisted(__0)) return;
 
-            bool restoreEnabled = DurabilityConfig.RestoreMaxDurability;
+            // UI 开关
+            bool restoreEnabled = DurabilityConfig.RestoreMaxDurability && RepairToggleUI.IsRestoreModeEnabled;
             bool noLossEnabled = DurabilityConfig.NoMaxDurabilityLoss;
 
             // 修复恢复耐久上限
@@ -46,14 +39,12 @@ namespace MoreDurability.Patches
             {
                 __0.DurabilityLoss = 0f;
                 __0.Durability = __0.MaxDurability;
-                //Debug.Log($"{LogTag} {__0.DisplayName} 已恢复满耐久上限");
             }
             // 维修不掉耐久上限
             else if (noLossEnabled && Math.Abs(__0.DurabilityLoss - __state) > 0.001f)
             {
                 __0.DurabilityLoss = __state;
                 __0.Durability = __0.MaxDurability * (1f - __state);
-                //Debug.Log($"{LogTag} {__0.DisplayName} 已保持耐久上限不变");
             }
         }
     }

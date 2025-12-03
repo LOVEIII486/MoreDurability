@@ -18,43 +18,33 @@ namespace MoreDurability.Patches
         [HarmonyPostfix]
         public static void Postfix(ref TextMeshProUGUI ___willLoseDurabilityText)
         {
+            // 每次刷新界面时，检查一下开关是否应该显示
+            RepairToggleUI.UpdateVisibility();
+
             Item selectedItem = ItemUIUtilities.SelectedItem;
 
-            if (selectedItem == null || ___willLoseDurabilityText == null)
-            {
-                return;
-            }
+            if (selectedItem == null || ___willLoseDurabilityText == null) return;
             
             if (!DurabilityConfig.IsWhitelisted(selectedItem)) return;
             
-            bool restoreEnabled = Settings.DurabilityConfig.RestoreMaxDurability;
-            bool noLossEnabled = Settings.DurabilityConfig.NoMaxDurabilityLoss;
+            bool restoreEnabled = DurabilityConfig.RestoreMaxDurability && RepairToggleUI.IsRestoreModeEnabled;
+            bool noLossEnabled = DurabilityConfig.NoMaxDurabilityLoss;
 
-            if (!restoreEnabled && !noLossEnabled)
-            {
-                return;
-            }
+            if (!restoreEnabled && !noLossEnabled) return;
 
             string baseLabel = "UI_MaxDurability".ToPlainText();
 
             if (restoreEnabled)
             {
                 float originalMax = selectedItem.MaxDurability;
-                float lossPct = selectedItem.DurabilityLoss; // 损耗百分比 (0.068)
-                float currentDurability = selectedItem.Durability; // 当前耐久 (93.2)
-
-                // 当前受损后的实际限制
-                // 100 * (1 - 0.068) = 93.2
+                float lossPct = selectedItem.DurabilityLoss;
+                float currentDurability = selectedItem.Durability;
                 float currentMax = originalMax * (1f - lossPct);
 
-                // 常规维修：从当前耐久修到当前上限
                 float normalRepairVal = currentMax - currentDurability;
-                // 防止浮点数误差出现微小的负数
                 if (normalRepairVal < 0.01f) normalRepairVal = 0f;
 
-                // 上限恢复：从当前上限恢复到原始上限
                 float maxRestoreVal = originalMax - currentMax;
-
                 float totalVal = normalRepairVal + maxRestoreVal;
 
                 string totalStr = "+" + totalVal.ToString("0.#");
@@ -75,7 +65,7 @@ namespace MoreDurability.Patches
     }
 
     /// <summary>
-    /// 修复价格显示补丁 ，基础维修 + 恢复上限   
+    /// 修复价格显示补丁
     /// </summary>
     [HarmonyPatch(typeof(ItemRepairView), "RefreshSelectedItemInfo")]
     public static class RepairPriceDisplayPatch
@@ -85,36 +75,22 @@ namespace MoreDurability.Patches
         public static void Postfix(ref TextMeshProUGUI ___repairPriceText)
         {
             Item selectedItem = ItemUIUtilities.SelectedItem;
-
-            if (selectedItem == null || ___repairPriceText == null)
-            {
-                return;
-            }
+            if (selectedItem == null || ___repairPriceText == null) return;
             
             if (!DurabilityConfig.IsWhitelisted(selectedItem)) return;
             
-            bool restoreEnabled = Settings.DurabilityConfig.RestoreMaxDurability;
+            bool restoreEnabled = DurabilityConfig.RestoreMaxDurability && RepairToggleUI.IsRestoreModeEnabled;
 
-            if (!restoreEnabled || selectedItem.DurabilityLoss <= 0f)
-            {
-                return;
-            }
+            if (!restoreEnabled || selectedItem.DurabilityLoss <= 0f) return;
 
             string totalPriceText = ___repairPriceText.text;
-            if (!int.TryParse(totalPriceText, out int totalPrice))
-            {
-                return;
-            }
+            if (!int.TryParse(totalPriceText, out int totalPrice)) return;
 
-            float restoreMultiplier = Settings.DurabilityConfig.RestoreCostMultiplier;
-            int restorePrice =
-                Mathf.CeilToInt(selectedItem.Value * selectedItem.DurabilityLoss * restoreMultiplier * 0.5f);
+            float restoreMultiplier = DurabilityConfig.RestoreCostMultiplier;
+            int restorePrice = Mathf.CeilToInt(selectedItem.Value * selectedItem.DurabilityLoss * restoreMultiplier * 0.5f);
             int basePrice = totalPrice - restorePrice;
 
-            if (restorePrice <= 0)
-            {
-                return;
-            }
+            if (restorePrice <= 0) return;
 
             string coloredText = $"{totalPrice} " +
                                  $"<size=80%>(<color=#AAAAAA>{basePrice}</color> " +
