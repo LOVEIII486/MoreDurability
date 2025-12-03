@@ -2,7 +2,7 @@
 using Duckov.UI;
 using HarmonyLib;
 using ItemStatsSystem;
-using MoreDurability.Settings; // 引用配置
+using MoreDurability.Settings;
 using UnityEngine;
 
 namespace MoreDurability.Patches

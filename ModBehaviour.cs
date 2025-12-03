@@ -43,12 +43,12 @@ namespace MoreDurability
             {
                 DurabilityConfig.Load();
                 SettingsUI.Register(); 
-                Debug.Log("[MoreDurability] 配置系统初始化完成");
+                Debug.Log($"{LogTag} 配置系统初始化完成");
                 MoreDurability.Patches.DurabilityMultiplierPatch.Initialize();
             }
             else
             {
-                Debug.LogError("[MoreDurability] ModSetting 依赖缺失或初始化失败！");
+                Debug.LogError($"{LogTag} ModSetting 依赖缺失或初始化失败！");
             }
         }
 
