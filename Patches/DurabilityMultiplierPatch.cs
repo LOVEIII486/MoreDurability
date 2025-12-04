@@ -15,6 +15,7 @@ namespace MoreDurability.Patches
     public static class DurabilityMultiplierPatch
     {
         private const string BackupKey = "MoreDurability_BaseMax";
+        private const string BackupDefaultDurabilityKey = "MoreDurability_BaseDefaultDurability";
         private const string LogTag = "[MoreDurability.MultiplierPatch]";
 
         /// <summary>
@@ -89,7 +90,7 @@ namespace MoreDurability.Patches
                 // 检查白名单
                 if (!DurabilityConfig.IsWhitelisted(item)) return false;
 
-                // 备份原始耐久值
+                // 1. 处理最大耐久度
                 float originalMax;
                 if (item.Constants.GetEntry(BackupKey) != null)
                 {
@@ -105,10 +106,26 @@ namespace MoreDurability.Patches
                 float newMax = originalMax * multiplier;
                 item.Constants.SetFloat("MaxDurability", newMax, true);
                 
-                if (item.Variables.GetFloat("Durability") > newMax)
+                // 2. 处理默认当前耐久度
+                float originalDefaultDurability;
+                
+                // 备份原始默认值，否则多次调整倍率会出错
+                if (item.Variables.GetEntry(BackupDefaultDurabilityKey) != null)
                 {
-                    item.Variables.SetFloat("Durability", newMax, true);
+                    originalDefaultDurability = item.Variables.GetFloat(BackupDefaultDurabilityKey);
                 }
+                else
+                {
+                    originalDefaultDurability = item.Variables.GetFloat("Durability");
+                    item.Variables.SetFloat(BackupDefaultDurabilityKey, originalDefaultDurability, true);
+                }
+
+                // 按倍率等比提升默认耐久
+                // 情况A（满耐久）：原默认100，倍率5x -> 新默认500。生成物品 500/500。
+                // 情况B（预设残损）：原默认50，倍率5x -> 新默认250。生成物品 250/500 (保持50%)。
+                float newDefaultDurability = originalDefaultDurability * multiplier;
+                
+                item.Variables.SetFloat("Durability", newDefaultDurability, true);
 
                 return true;
             }
