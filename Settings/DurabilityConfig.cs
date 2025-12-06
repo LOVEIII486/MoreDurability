@@ -177,7 +177,7 @@ namespace MoreDurability.Settings
 
             if (ModSettingAPI.GetSavedValue(Key_RestoreCostMultiplier, out float savedRestoreCost))
             {
-                if (savedRestoreCost >= 0.5f && savedRestoreCost <= 3.0f)
+                if (savedRestoreCost >= 0.5f && savedRestoreCost <= 10.0f)
                 {
                     _restoreCostMultiplier = savedRestoreCost;
                 }

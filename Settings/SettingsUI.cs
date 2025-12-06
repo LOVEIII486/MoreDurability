@@ -53,7 +53,7 @@ namespace MoreDurability.Settings
                 DurabilityConfig.Key_RestoreCostMultiplier,
                 LocalizationManager.GetText("Setting_RestoreCostMultiplier"),
                 DurabilityConfig.RestoreCostMultiplier,
-                new Vector2(0.1f, 5.0f),
+                new Vector2(0.1f, 10.0f),
                 (value) =>
                 {
                     DurabilityConfig.RestoreCostMultiplier = value;
