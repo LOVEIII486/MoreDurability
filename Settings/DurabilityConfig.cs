@@ -22,6 +22,11 @@ namespace MoreDurability.Settings
         private const bool Default_RestoreMax = false;
         private const float Default_RestoreCost = 2.0f;
         private const string Default_WhitelistedTags = "Gun,Helmat,Armor"; 
+        
+        /// <summary>
+        /// 原版维修损耗率常量：0.2
+        /// </summary>
+        public const float VanillaRepairLossRate = 0.2f;
 
         // ==================== 配置变更事件 ====================
         public static event Action OnConfigChanged;

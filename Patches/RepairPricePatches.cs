@@ -20,24 +20,35 @@ namespace MoreDurability.Patches
         {
             try
             {
-                // 必须同时满足：全局开启 && UI开关开启
-                bool restoreEnabled = DurabilityConfig.RestoreMaxDurability && RepairToggleUI.IsRestoreModeEnabled;
-                
-                if (!DurabilityConfig.IsWhitelisted(item)) return;
-                
-                if (!restoreEnabled || item == null || item.DurabilityLoss <= 0f)
-                {
-                    return;
-                }
+                bool restoreEnabled = Settings.DurabilityConfig.RestoreMaxDurability && RepairToggleUI.IsRestoreModeEnabled;
+                if (item == null || !restoreEnabled) return;
 
+                // 1. 获取基础配置
                 float restoreMultiplier = Settings.DurabilityConfig.RestoreCostMultiplier;
-                int restorePrice = Mathf.CeilToInt(item.Value * item.DurabilityLoss * restoreMultiplier * 0.5f);
-                
-                __result += restorePrice;
+                float lossRate = Settings.DurabilityConfig.VanillaRepairLossRate;
+
+                // 2. 计算已有的上限损耗
+                float currentLossPercent = item.DurabilityLoss;
+
+                // 3. 计算潜在损耗
+                float repairAmount = item.MaxDurabilityWithLoss - item.Durability;
+                float potentialLossAmount = repairAmount * lossRate;
+                float potentialLossPercent = potentialLossAmount / item.MaxDurability;
+
+                // 4. 总恢复占比 = 现有红色损耗 + 潜在新生损耗
+                float totalRestorePercent = currentLossPercent + potentialLossPercent;
+
+                if (totalRestorePercent > 0.001f)
+                {
+                    // 计算额外费用并累加到原价中
+                    // 价值 * 总恢复比例 * 价格倍率 * 调节系数(0.5)
+                    int extraPrice = Mathf.CeilToInt(item.Value * totalRestorePercent * restoreMultiplier * 0.5f);
+                    __result += extraPrice;
+                }
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[MoreDurability.RepairPrice] 价格计算错误: {ex.Message}");
+                Debug.LogError($"[MoreDurability] 价格计算算法错误: {ex.Message}");
             }
         }
     }
